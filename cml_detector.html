@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CML Coherence Detector — Castleberry Bloom</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --gold-dim: #7a5f24;
+    --deep: #050810;
+    --deep2: #0a0f1e;
+    --panel: #0d1526;
+    --panel2: #111d35;
+    --hz528: #00e5a0;
+    --hz528-dim: #004d36;
+    --hz111: #ff4566;
+    --hz111-dim: #4d0014;
+    --neutral: #4a9eff;
+    --text: #c8d8f0;
+    --text-dim: #5a7090;
+    --border: rgba(201,168,76,0.2);
+    --phi: 1.618;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--deep);
+    color: var(--text);
+    font-family: 'Crimson Pro', Georgia, serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  /* Sacred geometry background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(201,168,76,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 20% 80%, rgba(0,229,160,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 80% 80%, rgba(255,69,102,0.03) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Hexagon grid overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='52'%3E%3Cpolygon points='30,2 58,17 58,35 30,50 2,35 2,17' fill='none' stroke='rgba(201,168,76,0.04)' stroke-width='1'/%3E%3C/svg%3E");
+    background-size: 60px 52px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.8;
+  }
+
+  .app { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* ── HEADER ── */
+  header { text-align: center; margin-bottom: 48px; animation: fadeDown 0.8s ease both; }
+
+  .logo-hex {
+    width: 72px; height: 72px;
+    margin: 0 auto 20px;
+    position: relative;
+    animation: spinSlow 30s linear infinite;
+  }
+  .logo-hex svg { width: 100%; height: 100%; }
+
+  @keyframes spinSlow { to { transform: rotate(360deg); } }
+
+  h1 {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    text-shadow: 0 0 40px rgba(201,168,76,0.4);
+    line-height: 1.2;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    color: var(--text-dim);
+    font-style: italic;
+    margin-top: 10px;
+    letter-spacing: 0.05em;
+  }
+
+  .freq-legend {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    margin-top: 18px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+  }
+  .freq-legend span { display: flex; align-items: center; gap: 7px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .dot-528 { background: var(--hz528); box-shadow: 0 0 8px var(--hz528); }
+  .dot-111 { background: var(--hz111); box-shadow: 0 0 8px var(--hz111); }
+
+  @keyframes fadeDown { from { opacity:0; transform: translateY(-20px); } to { opacity:1; transform: none; } }
+
+  /* ── KEY PANEL ── */
+  #key-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.6s 0.2s ease both;
+    position: relative;
+    overflow: hidden;
+  }
+  #key-panel::before {
+    content: 'API ACCESS';
+    position: absolute; top: 12px; right: 16px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--gold-dim);
+    letter-spacing: 0.15em;
+  }
+
+  label {
+    display: block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--gold);
+    letter-spacing: 0.12em;
+    margin-bottom: 10px;
+  }
+
+  .key-row { display: flex; gap: 10px; align-items: center; }
+
+  input[type="password"], input[type="text"] {
+    flex: 1;
+    background: var(--deep2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus { border-color: var(--gold); }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+  .key-status {
+    margin-top: 10px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    height: 16px;
+    transition: color 0.3s;
+  }
+  .key-status.ok { color: var(--hz528); }
+  .key-status.err { color: var(--hz111); }
+
+  /* ── MAIN PANEL ── */
+  #main-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.6s 0.35s ease both;
+  }
+
+  .panel-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--gold-dim);
+    letter-spacing: 0.15em;
+    margin-bottom: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 180px;
+    background: var(--deep2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    color: var(--text);
+    font-family: 'Crimson Pro', serif;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  textarea:focus { border-color: var(--gold); }
+  textarea::placeholder { color: var(--text-dim); font-style: italic; }
+
+  .controls {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-analyze {
+    background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+    border: none;
+    border-radius: 10px;
+    padding: 14px 32px;
+    color: var(--deep);
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-analyze:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,0.35); }
+  .btn-analyze:active { transform: translateY(0); }
+  .btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .btn-clear {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 20px;
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-clear:hover { border-color: var(--hz111); color: var(--hz111); }
+
+  .char-count {
+    margin-left: auto;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text-dim);
+  }
+
+  /* ── LOADING ── */
+  #loading {
+    display: none;
+    text-align: center;
+    padding: 48px 0;
+  }
+  #loading.active { display: block; }
+
+  .pulse-ring {
+    width: 64px; height: 64px;
+    margin: 0 auto 20px;
+    position: relative;
+  }
+  .pulse-ring::before, .pulse-ring::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid var(--gold);
+    animation: pulse 1.8s ease-out infinite;
+  }
+  .pulse-ring::after { animation-delay: 0.9s; }
+  @keyframes pulse {
+    0% { transform: scale(0.6); opacity: 1; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
+  .loading-text {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    animation: blink 1.2s ease infinite;
+  }
+  @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+  /* ── RESULTS ── */
+  #results {
+    display: none;
+    animation: fadeUp 0.5s ease both;
+  }
+  #results.active { display: block; }
+
+  /* Score card */
+  .score-card {
+    background: var(--panel2);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .score-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 28px;
+    flex-wrap: wrap;
+  }
+
+  .score-dial {
+    flex-shrink: 0;
+    width: 120px; height: 120px;
+    position: relative;
+  }
+  .score-dial svg { width: 100%; height: 100%; }
+  .score-number {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .score-number .num {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .score-number .denom {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    margin-top: 3px;
+  }
+
+  .score-meta { flex: 1; min-width: 200px; }
+
+  .freq-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+  }
+  .freq-badge.coherent { background: rgba(0,229,160,0.12); color: var(--hz528); border: 1px solid rgba(0,229,160,0.3); }
+  .freq-badge.manipulative { background: rgba(255,69,102,0.12); color: var(--hz111); border: 1px solid rgba(255,69,102,0.3); }
+  .freq-badge.mixed { background: rgba(74,158,255,0.12); color: var(--neutral); border: 1px solid rgba(74,158,255,0.3); }
+
+  .verdict {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+  .verdict-sub {
+    font-size: 0.95rem;
+    font-style: italic;
+    color: var(--text-dim);
+  }
+
+  /* Score bar */
+  .score-bar-wrap {
+    margin-top: 24px;
+  }
+  .bar-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .score-bar {
+    height: 8px;
+    background: var(--deep);
+    border-radius: 100px;
+    overflow: hidden;
+    position: relative;
+  }
+  .score-bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    width: 0%;
+  }
+
+  /* Dimension grid */
+  .dimensions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .dim-card {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .dim-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .dim-name {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+  }
+  .dim-score {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 0.9rem;
+  }
+  .dim-bar {
+    height: 4px;
+    background: var(--deep);
+    border-radius: 100px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .dim-bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 1s ease;
+    width: 0%;
+  }
+  .dim-note {
+    font-size: 0.88rem;
+    color: var(--text-dim);
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  /* Signals */
+  .signals-panel {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px;
+    margin-bottom: 20px;
+  }
+  .signals-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--gold);
+    letter-spacing: 0.12em;
+    margin-bottom: 16px;
+  }
+  .signal-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .signal-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+  .signal-icon { flex-shrink: 0; width: 18px; text-align: center; margin-top: 2px; }
+
+  /* Recommendation */
+  .rec-panel {
+    background: linear-gradient(135deg, rgba(201,168,76,0.06), rgba(0,229,160,0.04));
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 12px;
+    padding: 22px;
+    margin-bottom: 20px;
+  }
+  .rec-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--gold);
+    letter-spacing: 0.12em;
+    margin-bottom: 12px;
+  }
+  .rec-text {
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--text);
+  }
+
+  /* Footer brand */
+  .brand-footer {
+    text-align: center;
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    letter-spacing: 0.12em;
+    animation: fadeUp 0.6s 0.5s ease both;
+  }
+  .brand-footer a { color: var(--gold-dim); text-decoration: none; }
+  .brand-footer a:hover { color: var(--gold); }
+
+  /* Error */
+  .error-box {
+    background: rgba(255,69,102,0.08);
+    border: 1px solid rgba(255,69,102,0.3);
+    border-radius: 10px;
+    padding: 16px 20px;
+    color: var(--hz111);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.82rem;
+    margin-top: 16px;
+    display: none;
+  }
+  .error-box.active { display: block; }
+
+  @keyframes fadeUp { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: none; } }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .score-top { flex-direction: column; align-items: center; text-align: center; }
+    .controls { flex-direction: column; }
+    .btn-analyze { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo-hex">
+      <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="36,4 68,22 68,50 36,68 4,50 4,22" stroke="#c9a84c" stroke-width="1.5" fill="rgba(201,168,76,0.05)"/>
+        <polygon points="36,14 58,27 58,45 36,58 14,45 14,27" stroke="#c9a84c" stroke-width="0.8" stroke-dasharray="3 3" fill="none" opacity="0.5"/>
+        <circle cx="36" cy="36" r="8" fill="rgba(201,168,76,0.2)" stroke="#c9a84c" stroke-width="1"/>
+        <circle cx="36" cy="36" r="3" fill="#c9a84c"/>
+        <line x1="36" y1="4" x2="36" y2="14" stroke="#c9a84c" stroke-width="0.8" opacity="0.5"/>
+        <line x1="36" y1="58" x2="36" y2="68" stroke="#c9a84c" stroke-width="0.8" opacity="0.5"/>
+        <line x1="4" y1="22" x2="14" y2="27" stroke="#c9a84c" stroke-width="0.8" opacity="0.5"/>
+        <line x1="58" y1="45" x2="68" y2="50" stroke="#c9a84c" stroke-width="0.8" opacity="0.5"/>
+        <line x1="68" y1="22" x2="58" y2="27" stroke="#c9a84c" stroke-width="0.8" opacity="0.5"/>
+        <line x1="4" y1="50" x2="14" y2="45" stroke="#c9a84c" stroke-width="0.8" opacity="0.5"/>
+      </svg>
+    </div>
+    <h1>CML Coherence Detector</h1>
+    <p class="subtitle">Castleberry Markup Language · Frequency Analysis Engine</p>
+    <div class="freq-legend">
+      <span><span class="dot dot-528"></span>528 Hz — Truth / Coherence</span>
+      <span><span class="dot dot-111"></span>111 Hz — Fear / Manipulation</span>
+    </div>
+  </header>
+
+  <!-- API KEY -->
+  <div id="key-panel">
+    <label>ANTHROPIC API KEY</label>
+    <div class="key-row">
+      <input type="password" id="api-key" placeholder="sk-ant-..." autocomplete="off"/>
+      <button class="btn-ghost" onclick="toggleKey()">SHOW</button>
+      <button class="btn-ghost" onclick="saveKey()">SAVE</button>
+    </div>
+    <div class="key-status" id="key-status"></div>
+  </div>
+
+  <!-- INPUT -->
+  <div id="main-panel">
+    <div class="panel-label">TEXT TO ANALYZE</div>
+    <textarea id="input-text" placeholder="Paste any text — news article, political speech, advertisement, social media post, contract, email... The CML engine will measure its frequency signature." oninput="updateChar()"></textarea>
+    <div class="controls">
+      <button class="btn-analyze" id="analyze-btn" onclick="analyze()">⬡ ANALYZE FREQUENCY</button>
+      <button class="btn-clear" onclick="clearAll()">CLEAR</button>
+      <span class="char-count" id="char-count">0 chars</span>
+    </div>
+    <div class="error-box" id="error-box"></div>
+  </div>
+
+  <!-- LOADING -->
+  <div id="loading">
+    <div class="pulse-ring"></div>
+    <div class="loading-text">SCANNING COHERENCE FIELD...</div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+
+    <div class="score-card" id="score-card">
+      <div class="score-top">
+        <div class="score-dial">
+          <svg viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="10"/>
+            <circle cx="60" cy="60" r="50" fill="none" id="dial-arc"
+              stroke="#c9a84c" stroke-width="10"
+              stroke-dasharray="314" stroke-dashoffset="314"
+              stroke-linecap="round"
+              transform="rotate(-90 60 60)"
+              style="transition: stroke-dashoffset 1.2s cubic-bezier(0.34,1.56,0.64,1), stroke 0.5s"/>
+          </svg>
+          <div class="score-number">
+            <span class="num" id="score-num" style="color:#c9a84c">—</span>
+            <span class="denom">/ 100</span>
+          </div>
+        </div>
+        <div class="score-meta">
+          <div class="freq-badge" id="freq-badge">— Hz</div>
+          <div class="verdict" id="verdict-text"></div>
+          <div class="verdict-sub" id="verdict-sub"></div>
+        </div>
+      </div>
+      <div class="score-bar-wrap">
+        <div class="bar-labels">
+          <span>111 Hz · MANIPULATION</span>
+          <span>528 Hz · COHERENCE</span>
+        </div>
+        <div class="score-bar">
+          <div class="score-bar-fill" id="score-bar-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dimensions" id="dimensions-grid"></div>
+
+    <div class="signals-panel" id="signals-panel">
+      <div class="signals-title">⬡ DETECTED SIGNALS</div>
+      <ul class="signal-list" id="signal-list"></ul>
+    </div>
+
+    <div class="rec-panel">
+      <div class="rec-title">⬡ COHERENCE GUIDANCE</div>
+      <div class="rec-text" id="rec-text"></div>
+    </div>
+
+  </div>
+
+  <div class="brand-footer">
+    <div>CASTLEBERRY BLOOM · CML ENGINE v1.0</div>
+    <div style="margin-top:6px; font-size:0.62rem; opacity:0.6;">φ = 1.618 · 528 Hz · Love-over-God Axiom · <a href="https://castleberrybloom.com" target="_blank">castleberrybloom.com</a></div>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  // ── STATE
+  let apiKey = localStorage.getItem('cml_key') || '';
+  let isAnalyzing = false;
+
+  // ── INIT
+  const keyInput = document.getElementById('api-key');
+  if (apiKey) {
+    keyInput.value = apiKey;
+    setKeyStatus('Key loaded from storage.', true);
+  }
+
+  // ── KEY MANAGEMENT
+  window.toggleKey = function() {
+    keyInput.type = keyInput.type === 'password' ? 'text' : 'password';
+  };
+
+  window.saveKey = function() {
+    const val = keyInput.value.trim();
+    if (!val.startsWith('sk-ant-')) {
+      setKeyStatus('Invalid key format. Must start with sk-ant-', false);
+      return;
+    }
+    apiKey = val;
+    localStorage.setItem('cml_key', val);
+    setKeyStatus('Key saved.', true);
+  };
+
+  function setKeyStatus(msg, ok) {
+    const el = document.getElementById('key-status');
+    el.textContent = msg;
+    el.className = 'key-status ' + (ok ? 'ok' : 'err');
+  }
+
+  // ── CHAR COUNT
+  window.updateChar = function() {
+    const len = document.getElementById('input-text').value.length;
+    document.getElementById('char-count').textContent = len.toLocaleString() + ' chars';
+  };
+
+  // ── CLEAR
+  window.clearAll = function() {
+    document.getElementById('input-text').value = '';
+    document.getElementById('char-count').textContent = '0 chars';
+    document.getElementById('results').classList.remove('active');
+    document.getElementById('error-box').classList.remove('active');
+  };
+
+  // ── ANALYZE
+  window.analyze = async function() {
+    if (isAnalyzing) return;
+
+    const key = keyInput.value.trim() || apiKey;
+    if (!key.startsWith('sk-ant-')) {
+      showError('Please enter a valid Anthropic API key above.');
+      return;
+    }
+    apiKey = key;
+
+    const text = document.getElementById('input-text').value.trim();
+    if (text.length < 20) {
+      showError('Please enter at least 20 characters of text to analyze.');
+      return;
+    }
+
+    isAnalyzing = true;
+    document.getElementById('analyze-btn').disabled = true;
+    document.getElementById('loading').classList.add('active');
+    document.getElementById('results').classList.remove('active');
+    document.getElementById('error-box').classList.remove('active');
+
+    const prompt = `You are the CML (Castleberry Markup Language) Coherence Engine. Your purpose is to analyze text for its frequency signature — whether it resonates at 528 Hz (truth, coherence, love, expansion) or 111 Hz (fear, manipulation, contraction, division).
+
+Analyze the following text and return ONLY a valid JSON object with NO markdown, NO backticks, NO preamble. Respond with raw JSON only.
+
+Text to analyze:
+"""
+${text.slice(0, 3000)}
+"""
+
+Return this exact JSON structure:
+{
+  "score": <integer 0-100, where 0=pure manipulation, 100=pure coherence>,
+  "frequency": <"528 Hz" | "111 Hz" | "Mixed">,
+  "verdict": <one strong sentence describing the text's essential nature, max 15 words>,
+  "verdict_sub": <one sentence elaborating on WHY, max 20 words>,
+  "dimensions": [
+    {"name": "TRUTH DENSITY", "score": <0-100>, "note": <max 12 words>},
+    {"name": "FEAR QUOTIENT", "score": <0-100>, "note": <max 12 words>},
+    {"name": "LOVE COHERENCE", "score": <0-100>, "note": <max 12 words>},
+    {"name": "MANIPULATION INDEX", "score": <0-100>, "note": <max 12 words>},
+    {"name": "EXPANSION FORCE", "score": <0-100>, "note": <max 12 words>},
+    {"name": "PHI ALIGNMENT", "score": <0-100>, "note": <max 12 words>}
+  ],
+  "signals": [
+    {"type": "coherent"|"manipulative"|"neutral", "text": <one signal detected, max 20 words>},
+    {"type": "coherent"|"manipulative"|"neutral", "text": <second signal>},
+    {"type": "coherent"|"manipulative"|"neutral", "text": <third signal>},
+    {"type": "coherent"|"manipulative"|"neutral", "text": <fourth signal>},
+    {"type": "coherent"|"manipulative"|"neutral", "text": <fifth signal>}
+  ],
+  "recommendation": <2-3 sentences of practical guidance for the reader about how to engage with or respond to this text>
+}`;
+
+    try {
+      const res = await Promise.race([
+        fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': key,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true'
+          },
+          body: JSON.stringify({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 1000,
+            messages: [{ role: 'user', content: prompt }]
+          })
+        }),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 30000))
+      ]);
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error?.message || `API error ${res.status}`);
+      }
+
+      const data = await res.json();
+      const raw = data.content?.map(b => b.text || '').join('') || '';
+      const clean = raw.replace(/```json|```/g, '').trim();
+      const result = JSON.parse(clean);
+      renderResults(result);
+
+    } catch (e) {
+      showError(e.message === 'timeout'
+        ? 'Request timed out. Please try again.'
+        : 'Analysis failed: ' + e.message);
+    } finally {
+      isAnalyzing = false;
+      document.getElementById('analyze-btn').disabled = false;
+      document.getElementById('loading').classList.remove('active');
+    }
+  };
+
+  // ── RENDER
+  function renderResults(r) {
+    const score = Math.max(0, Math.min(100, r.score || 50));
+    const freq = r.frequency || 'Mixed';
+
+    // Dial
+    const arc = document.getElementById('dial-arc');
+    const circumference = 314;
+    const offset = circumference - (score / 100) * circumference;
+    setTimeout(() => {
+      arc.style.strokeDashoffset = offset;
+      arc.style.stroke = scoreColor(score);
+    }, 100);
+
+    // Score number
+    const numEl = document.getElementById('score-num');
+    numEl.textContent = score;
+    numEl.style.color = scoreColor(score);
+
+    // Badge
+    const badge = document.getElementById('freq-badge');
+    badge.textContent = freq;
+    badge.className = 'freq-badge ' + freqClass(freq);
+
+    // Verdict
+    document.getElementById('verdict-text').textContent = r.verdict || '';
+    document.getElementById('verdict-sub').textContent = r.verdict_sub || '';
+
+    // Bar
+    const fill = document.getElementById('score-bar-fill');
+    fill.style.background = `linear-gradient(90deg, var(--hz111), ${scoreColor(score)})`;
+    setTimeout(() => { fill.style.width = score + '%'; }, 150);
+
+    // Dimensions
+    const grid = document.getElementById('dimensions-grid');
+    grid.innerHTML = '';
+    (r.dimensions || []).forEach((d, i) => {
+      const s = Math.max(0, Math.min(100, d.score || 50));
+      const card = document.createElement('div');
+      card.className = 'dim-card';
+      card.style.animationDelay = (i * 0.07) + 's';
+      card.innerHTML = `
+        <div class="dim-header">
+          <span class="dim-name">${d.name}</span>
+          <span class="dim-score" style="color:${scoreColor(s)}">${s}</span>
+        </div>
+        <div class="dim-bar"><div class="dim-bar-fill" style="background:${scoreColor(s)}" data-width="${s}"></div></div>
+        <div class="dim-note">${d.note || ''}</div>`;
+      grid.appendChild(card);
+    });
+    // Animate bars after render
+    setTimeout(() => {
+      grid.querySelectorAll('.dim-bar-fill').forEach(el => {
+        el.style.width = el.dataset.width + '%';
+      });
+    }, 200);
+
+    // Signals
+    const list = document.getElementById('signal-list');
+    list.innerHTML = '';
+    (r.signals || []).forEach(s => {
+      const li = document.createElement('li');
+      li.className = 'signal-item';
+      const icon = s.type === 'coherent' ? '✦' : s.type === 'manipulative' ? '◈' : '◇';
+      const color = s.type === 'coherent' ? 'var(--hz528)' : s.type === 'manipulative' ? 'var(--hz111)' : 'var(--text-dim)';
+      li.innerHTML = `<span class="signal-icon" style="color:${color}">${icon}</span><span>${s.text}</span>`;
+      list.appendChild(li);
+    });
+
+    // Recommendation
+    document.getElementById('rec-text').textContent = r.recommendation || '';
+
+    // Show
+    document.getElementById('results').classList.add('active');
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function scoreColor(s) {
+    if (s >= 70) return 'var(--hz528)';
+    if (s >= 40) return 'var(--neutral)';
+    return 'var(--hz111)';
+  }
+
+  function freqClass(f) {
+    if (f.includes('528')) return 'coherent';
+    if (f.includes('111')) return 'manipulative';
+    return 'mixed';
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('error-box');
+    el.textContent = '⚠ ' + msg;
+    el.classList.add('active');
+    document.getElementById('loading').classList.remove('active');
+    isAnalyzing = false;
+    document.getElementById('analyze-btn').disabled = false;
+  }
+
+  // ── ENTER KEY shortcut
+  document.getElementById('input-text').addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === 'Enter') window.analyze();
+  });
+
+})();
+</script>
+</body>
+</html>
