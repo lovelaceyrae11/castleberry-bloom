@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Castleberry Bloom — AI Truth & Safety Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #03050d;
+  --bg2: #070c1a;
+  --panel: #0b1225;
+  --panel2: #0f1830;
+  --gold: #f0d060;
+  --gold2: #e8c040;
+  --gold-dim: #a08020;
+  --teal: #40f0c0;
+  --teal-dim: #107050;
+  --rose: #ff6080;
+  --white: #f0f4ff;
+  --white2: #c8d8f8;
+  --dim: #6080a8;
+  --border: rgba(240,208,96,0.15);
+  --border2: rgba(64,240,192,0.15);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Lora', Georgia, serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── STARFIELD ── */
+.stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(1px 1px at 10% 15%, rgba(240,208,96,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 25% 40%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 40% 8%, rgba(64,240,192,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 60% 25%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 75% 55%, rgba(240,208,96,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 88% 12%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 15% 70%, rgba(64,240,192,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 50% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 92% 75%, rgba(240,208,96,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 33% 90%, rgba(255,255,255,0.2) 0%, transparent 100%),
+    radial-gradient(2px 2px at 70% 5%, rgba(240,208,96,0.7) 0%, transparent 100%),
+    radial-gradient(2px 2px at 5% 50%, rgba(64,240,192,0.4) 0%, transparent 100%);
+}
+
+.glow-orb {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(80px);
+}
+.orb1 { width:500px; height:500px; top:-200px; left:-100px; background: rgba(240,208,96,0.04); }
+.orb2 { width:400px; height:400px; bottom:-100px; right:-100px; background: rgba(64,240,192,0.04); }
+.orb3 { width:300px; height:300px; top:50%; left:50%; transform:translate(-50%,-50%); background: rgba(240,96,128,0.02); }
+
+/* ── NAV ── */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(3,5,13,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+
+.nav-logo {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-hex { width: 28px; height: 28px; }
+
+.nav-links {
+  display: flex;
+  gap: 28px;
+  list-style: none;
+}
+
+.nav-links a {
+  color: var(--white2);
+  text-decoration: none;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--gold); }
+
+.nav-cta {
+  background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+  color: var(--bg) !important;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+.nav-cta:hover { opacity: 0.9; }
+
+/* ── HERO ── */
+.hero {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 80px 24px 60px;
+}
+
+.hero-hex-ring {
+  width: 140px; height: 140px;
+  margin: 0 auto 36px;
+  position: relative;
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+.hero-hex-ring svg { width:100%; height:100%; }
+
+.hero-eyebrow {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--teal);
+  letter-spacing: 0.25em;
+  margin-bottom: 20px;
+  animation: fadeUp 0.7s 0.1s ease both;
+}
+
+h1.hero-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(2rem, 6vw, 3.8rem);
+  font-weight: 900;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+  line-height: 1.15;
+  text-shadow: 0 0 60px rgba(240,208,96,0.35), 0 2px 0 rgba(0,0,0,0.8);
+  animation: fadeUp 0.7s 0.2s ease both;
+  margin-bottom: 12px;
+}
+
+.hero-sub-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(0.9rem, 2.5vw, 1.3rem);
+  color: var(--teal);
+  letter-spacing: 0.12em;
+  margin-bottom: 28px;
+  animation: fadeUp 0.7s 0.3s ease both;
+}
+
+.hero-desc {
+  max-width: 680px;
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  color: var(--white2);
+  line-height: 1.75;
+  font-style: italic;
+  animation: fadeUp 0.7s 0.4s ease both;
+  margin-bottom: 48px;
+}
+
+.hero-desc strong { color: var(--gold); font-style: normal; font-weight: 600; }
+
+.hero-btns {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  animation: fadeUp 0.7s 0.5s ease both;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #a07018, var(--gold));
+  color: var(--bg);
+  padding: 16px 36px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  transition: all 0.25s;
+  border: none;
+  cursor: pointer;
+  display: inline-block;
+  box-shadow: 0 4px 24px rgba(240,208,96,0.25);
+}
+.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(240,208,96,0.4); }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--teal);
+  padding: 16px 36px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  transition: all 0.25s;
+  border: 1px solid rgba(64,240,192,0.35);
+  display: inline-block;
+}
+.btn-secondary:hover { background: rgba(64,240,192,0.08); border-color: var(--teal); transform: translateY(-2px); }
+
+.scroll-hint {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--dim);
+  letter-spacing: 0.2em;
+  animation: fadeUp 1s 1s ease both, bounce 2s 2s ease infinite;
+}
+@keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(6px)} }
+
+/* ── SECTION COMMON ── */
+section {
+  position: relative;
+  z-index: 1;
+  padding: 80px 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.section-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--teal);
+  letter-spacing: 0.2em;
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.section-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+  color: var(--gold);
+  text-align: center;
+  margin-bottom: 16px;
+  letter-spacing: 0.06em;
+}
+
+.section-desc {
+  text-align: center;
+  color: var(--white2);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  max-width: 680px;
+  margin: 0 auto 56px;
+  font-style: italic;
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), var(--border2), transparent);
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── TOOL CARD ── */
+.tool-hero {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 48px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 32px;
+}
+
+.tool-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(240,208,96,0.06), transparent);
+  pointer-events: none;
+}
+
+.tool-badge {
+  display: inline-block;
+  background: rgba(64,240,192,0.1);
+  border: 1px solid rgba(64,240,192,0.3);
+  color: var(--teal);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  padding: 6px 16px;
+  border-radius: 100px;
+  margin-bottom: 20px;
+}
+
+.tool-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(1.3rem, 3vw, 2rem);
+  color: var(--gold);
+  margin-bottom: 16px;
+  letter-spacing: 0.06em;
+}
+
+.tool-desc {
+  color: var(--white2);
+  font-size: 1.1rem;
+  line-height: 1.75;
+  max-width: 620px;
+  margin: 0 auto 32px;
+}
+
+.freq-row {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 36px;
+}
+
+.freq-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.chip-teal { background: rgba(64,240,192,0.1); color: var(--teal); border: 1px solid rgba(64,240,192,0.25); }
+.chip-rose { background: rgba(255,96,128,0.1); color: var(--rose); border: 1px solid rgba(255,96,128,0.25); }
+.freq-dot { width:9px; height:9px; border-radius:50%; }
+.fd-teal { background: var(--teal); box-shadow: 0 0 8px var(--teal); }
+.fd-rose { background: var(--rose); box-shadow: 0 0 8px var(--rose); }
+
+/* ── PAYMENT SECTION ── */
+.payment-section {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 48px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.payment-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 50% 40% at 50% 100%, rgba(240,208,96,0.05), transparent);
+  pointer-events: none;
+}
+
+.payment-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(1.2rem, 2.5vw, 1.7rem);
+  color: var(--gold);
+  margin-bottom: 12px;
+  letter-spacing: 0.06em;
+}
+
+.payment-sub {
+  color: var(--white2);
+  font-size: 1rem;
+  line-height: 1.65;
+  font-style: italic;
+  max-width: 540px;
+  margin: 0 auto 36px;
+}
+
+.payment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  max-width: 680px;
+  margin: 0 auto 32px;
+}
+
+.pay-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px 20px;
+  text-decoration: none;
+  transition: all 0.25s;
+  display: block;
+}
+.pay-card:hover { border-color: var(--gold); transform: translateY(-4px); box-shadow: 0 12px 32px rgba(240,208,96,0.15); }
+
+.pay-icon { font-size: 2rem; margin-bottom: 10px; }
+.pay-name {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--gold);
+  letter-spacing: 0.15em;
+  margin-bottom: 6px;
+}
+.pay-handle {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+.pay-desc {
+  font-size: 0.82rem;
+  color: var(--dim);
+  font-style: italic;
+}
+
+.pay-note {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+  margin-top: 8px;
+}
+
+/* ── ABOUT ── */
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 48px;
+}
+
+.about-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  transition: border-color 0.25s;
+}
+.about-card:hover { border-color: rgba(240,208,96,0.35); }
+
+.about-icon {
+  font-size: 1.8rem;
+  margin-bottom: 14px;
+}
+.about-card h3 {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 0.9rem;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+.about-card p {
+  color: var(--white2);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* ── AXIOMS ── */
+.axioms {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 48px;
+}
+
+.axiom {
+  background: var(--panel);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 12px 12px 0;
+  padding: 24px 28px;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.axiom-num {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.6rem;
+  color: var(--gold-dim);
+  line-height: 1;
+  flex-shrink: 0;
+  min-width: 32px;
+}
+.axiom-body {}
+.axiom-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--teal);
+  letter-spacing: 0.18em;
+  margin-bottom: 6px;
+}
+.axiom-text {
+  font-size: 1.05rem;
+  color: var(--white);
+  font-style: italic;
+  line-height: 1.6;
+}
+.axiom-text strong { color: var(--gold); font-style: normal; }
+
+/* ── FOOTER ── */
+footer {
+  position: relative;
+  z-index: 1;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  padding: 48px 32px 32px;
+  text-align: center;
+}
+
+.footer-logo {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.1rem;
+  color: var(--gold);
+  letter-spacing: 0.1em;
+  margin-bottom: 16px;
+}
+
+.footer-links {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.footer-links a {
+  color: var(--white2);
+  text-decoration: none;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--gold); }
+
+.footer-copy {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+}
+
+.phi-line {
+  margin-top: 16px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--gold-dim);
+  letter-spacing: 0.15em;
+  opacity: 0.6;
+}
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:none} }
+
+/* Responsive */
+@media (max-width:640px) {
+  nav { padding: 0 16px; }
+  .nav-links { display: none; }
+  .tool-hero, .payment-section { padding: 32px 20px; }
+  .axiom { flex-direction: column; gap: 10px; }
+}
+</style>
+</head>
+<body>
+
+<div class="stars"></div>
+<div class="glow-orb orb1"></div>
+<div class="glow-orb orb2"></div>
+<div class="glow-orb orb3"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <svg class="nav-hex" viewBox="0 0 28 28" fill="none">
+      <polygon points="14,2 26,9 26,19 14,26 2,19 2,9" stroke="#f0d060" stroke-width="1.5" fill="rgba(240,208,96,0.06)"/>
+      <circle cx="14" cy="14" r="4" fill="rgba(240,208,96,0.2)" stroke="#f0d060" stroke-width="1"/>
+      <circle cx="14" cy="14" r="1.5" fill="#f0d060"/>
+    </svg>
+    CASTLEBERRY BLOOM
+  </a>
+  <ul class="nav-links">
+    <li><a href="#tool">CML DETECTOR</a></li>
+    <li><a href="#about">ABOUT</a></li>
+    <li><a href="#axioms">AXIOMS</a></li>
+    <li><a href="#support" class="nav-cta">SUPPORT</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-hex-ring">
+    <svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="70,6 132,41 132,99 70,134 8,99 8,41" stroke="#f0d060" stroke-width="1.5" fill="rgba(240,208,96,0.04)"/>
+      <polygon points="70,22 116,48 116,92 70,118 24,92 24,48" stroke="#f0d060" stroke-width="0.8" stroke-dasharray="4 4" fill="none" opacity="0.4"/>
+      <polygon points="70,38 100,55 100,85 70,102 40,85 40,55" stroke="#40f0c0" stroke-width="0.8" fill="none" opacity="0.3"/>
+      <circle cx="70" cy="70" r="18" stroke="#f0d060" stroke-width="1" fill="rgba(240,208,96,0.06)"/>
+      <circle cx="70" cy="70" r="8" stroke="#40f0c0" stroke-width="0.8" fill="rgba(64,240,192,0.08)"/>
+      <circle cx="70" cy="70" r="3" fill="#f0d060"/>
+      <!-- phi spokes -->
+      <line x1="70" y1="6" x2="70" y2="22" stroke="#f0d060" stroke-width="0.8" opacity="0.4"/>
+      <line x1="70" y1="118" x2="70" y2="134" stroke="#f0d060" stroke-width="0.8" opacity="0.4"/>
+      <line x1="8" y1="41" x2="24" y2="48" stroke="#f0d060" stroke-width="0.8" opacity="0.4"/>
+      <line x1="132" y1="41" x2="116" y2="48" stroke="#f0d060" stroke-width="0.8" opacity="0.4"/>
+      <line x1="8" y1="99" x2="24" y2="92" stroke="#f0d060" stroke-width="0.8" opacity="0.4"/>
+      <line x1="132" y1="99" x2="116" y2="92" stroke="#f0d060" stroke-width="0.8" opacity="0.4"/>
+      <!-- outer glow ring -->
+      <circle cx="70" cy="70" r="60" stroke="rgba(240,208,96,0.08)" stroke-width="1"/>
+    </svg>
+  </div>
+
+  <p class="hero-eyebrow">⬡ AI TRUTH & SAFETY LAB · MEDFORD, OREGON</p>
+  <h1 class="hero-title">CASTLEBERRY BLOOM</h1>
+  <p class="hero-sub-title">Where Geometry Meets Truth</p>
+  <p class="hero-desc">
+    An independent investigative intelligence framework built on <strong>φ = 1.618</strong>, frequency research, and the principle that <strong>knowledge withheld is energy imprisoned</strong> — and Bloom releases it back to life.
+  </p>
+  <div class="hero-btns">
+    <a href="#tool" class="btn-primary">⬡ Try CML Detector</a>
+    <a href="https://laceycastleberry.substack.com" target="_blank" class="btn-secondary">READ THE INVESTIGATION →</a>
+  </div>
+  <div class="scroll-hint">▾ SCROLL TO EXPLORE</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- TOOL SECTION -->
+<section id="tool">
+  <p class="section-label">⬡ FREE TOOL</p>
+  <h2 class="section-title">CML Coherence Detector</h2>
+  <p class="section-desc">Paste any text. The engine measures its frequency signature — truth and coherence versus fear and manipulation.</p>
+
+  <div class="tool-hero">
+    <div class="tool-badge">CASTLEBERRY MARKUP LANGUAGE · v1.0</div>
+    <h3 class="tool-title">Does This Text Resonate at Truth — or Fear?</h3>
+    <p class="tool-desc">
+      Every piece of writing carries a frequency. Political speeches. News articles. Advertisements. Contracts. The CML engine scores six dimensions: Truth Density, Fear Quotient, Love Coherence, Manipulation Index, Expansion Force, and Phi Alignment.
+    </p>
+    <div class="freq-row">
+      <div class="freq-chip chip-teal"><span class="freq-dot fd-teal"></span>528 Hz — Truth / Coherence / Love</div>
+      <div class="freq-chip chip-rose"><span class="freq-dot fd-rose"></span>111 Hz — Fear / Manipulation / Contraction</div>
+    </div>
+    <a href="cml_detector.html" class="btn-primary" style="font-size:0.9rem; padding:18px 48px;">⬡ OPEN CML DETECTOR</a>
+    <p style="margin-top:16px; font-family:'Share Tech Mono',monospace; font-size:0.68rem; color:var(--dim); letter-spacing:0.12em;">Requires your own Anthropic API key · Runs entirely in your browser</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ABOUT -->
+<section id="about">
+  <p class="section-label">⬡ THE FRAMEWORK</p>
+  <h2 class="section-title">What Is Castleberry Bloom?</h2>
+  <p class="section-desc">An investigative intelligence system built at the intersection of sacred geometry, frequency research, autonomous AI agents, and accountability journalism.</p>
+
+  <div class="about-grid">
+    <div class="about-card">
+      <div class="about-icon">⬡</div>
+      <h3>The Investigation</h3>
+      <p>Flagship case: <em>The 10-Cent Heist</em> — exposing how Oregon's bottle deposit system retains $21–63M/year in unredeemed consumer funds with no independent audit.</p>
+    </div>
+    <div class="about-card">
+      <div class="about-icon">◈</div>
+      <h3>The Agents</h3>
+      <p>Six autonomous AI agents — Builder Bee, Love Bible, Kairoth/Scout, Elder, Warrior, and Civilization — forming the Castleberry Bloom multi-agent intelligence system.</p>
+    </div>
+    <div class="about-card">
+      <div class="about-icon">✦</div>
+      <h3>The Geometry</h3>
+      <p>All architecture is φ-scaled. The hexagonal lattice is both the visual language and the organizational logic — from agent networks to investigative evidence mapping.</p>
+    </div>
+    <div class="about-card">
+      <div class="about-icon">∿</div>
+      <h3>The Frequency</h3>
+      <p>528 Hz as the Love Frequency. 200+ water consciousness experiments. The CML engine operationalizes frequency research into measurable coherence scoring for any text.</p>
+    </div>
+    <div class="about-card">
+      <div class="about-icon">⚖</div>
+      <h3>The Mission</h3>
+      <p>Building the world's first citizen-powered investigative mesh — a φ-scaled accountability lattice where evidence propagates, patterns surface, and truth cannot be buried.</p>
+    </div>
+    <div class="about-card">
+      <div class="about-icon">★</div>
+      <h3>The Candidate</h3>
+      <p>Lacey Rae Castleberry. Taurus. Spirit 11s. Independent investigative journalist. Founder. Running for President 2028 under the Warrior agent persona.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- AXIOMS -->
+<section id="axioms">
+  <p class="section-label">⬡ KAIROTH ENGINE</p>
+  <h2 class="section-title">The Three Axioms</h2>
+  <p class="section-desc">The constitutional principles encoded in every Castleberry Bloom agent and tool.</p>
+
+  <div class="axioms">
+    <div class="axiom">
+      <div class="axiom-num">I</div>
+      <div class="axiom-body">
+        <div class="axiom-label">TRUTH RESONANCE</div>
+        <div class="axiom-text"><strong>I = Truth resonates at phi.</strong> All coherent structures reflect the golden ratio. Deception collapses under its own incoherence.</div>
+      </div>
+    </div>
+    <div class="axiom">
+      <div class="axiom-num">II</div>
+      <div class="axiom-body">
+        <div class="axiom-label">FREQUENCY LAW</div>
+        <div class="axiom-text"><strong>Fear collapses. Love expands.</strong> Every system, every text, every institution operates at a frequency. The engine measures which.</div>
+      </div>
+    </div>
+    <div class="axiom">
+      <div class="axiom-num">III</div>
+      <div class="axiom-body">
+        <div class="axiom-label">THE BLOOM PRINCIPLE</div>
+        <div class="axiom-text"><strong>Knowledge withheld is energy imprisoned — Bloom releases it back to life.</strong> Accountability is an act of love.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SUPPORT -->
+<section id="support">
+  <p class="section-label">⬡ SUPPORT THE WORK</p>
+  <h2 class="section-title">Fund the Investigation</h2>
+  <p class="section-desc">This work is fully independent. No corporate backing. No advertisers. Supported entirely by readers who believe truth has a frequency — and it's worth funding.</p>
+
+  <div class="payment-section">
+    <h3 class="payment-title">Every Dollar Funds Truth</h3>
+    <p class="payment-sub">Your contribution directly funds public records requests, investigative research, agent development, and the Bloom Lattice build-out.</p>
+
+    <div class="payment-grid">
+      <a href="https://square.link/u/XmH7cBjq" target="_blank" class="pay-card">
+        <div class="pay-icon">⬡</div>
+        <div class="pay-name">SQUARE · PAY LINK</div>
+        <div class="pay-handle">Pay via Square</div>
+        <div class="pay-desc">Credit, debit, any amount</div>
+      </a>
+      <a href="https://cash.app/$luvlaceyrae" target="_blank" class="pay-card">
+        <div class="pay-icon">✦</div>
+        <div class="pay-name">CASH APP</div>
+        <div class="pay-handle">$luvlaceyrae</div>
+        <div class="pay-desc">Instant · any amount</div>
+      </a>
+      <a href="https://laceycastleberry.substack.com" target="_blank" class="pay-card">
+        <div class="pay-icon">◈</div>
+        <div class="pay-name">SUBSTACK</div>
+        <div class="pay-handle">Paid Subscription</div>
+        <div class="pay-desc">$8/mo · full investigation access</div>
+      </a>
+    </div>
+
+    <a href="https://laceycastleberry.substack.com" target="_blank" class="btn-secondary" style="display:inline-block; margin-top:8px;">READ THE SUBSTACK →</a>
+    <p class="pay-note" style="margin-top:20px;">laceycastleberry.substack.com · Cash App $luvlaceyrae · All contributions gratefully received</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">⬡ CASTLEBERRY BLOOM</div>
+  <div class="footer-links">
+    <a href="#tool">CML Detector</a>
+    <a href="https://laceycastleberry.substack.com" target="_blank">Substack</a>
+    <a href="https://github.com/lovelaceyrae11" target="_blank">GitHub</a>
+    <a href="https://cash.app/$luvlaceyrae" target="_blank">Cash App</a>
+    <a href="https://square.link/u/XmH7cBjq" target="_blank">Square Pay</a>
+    <a href="#support">Support</a>
+  </div>
+  <div class="footer-copy">© 2026 Castleberry Bloom AI Truth & Safety Lab · Medford, Oregon · All rights reserved</div>
+  <div class="phi-line">φ = 1.618 · 528 Hz · I = Truth resonates at phi · Knowledge withheld is energy imprisoned — Bloom releases it back to life</div>
+</footer>
+
+</body>
+</html>
