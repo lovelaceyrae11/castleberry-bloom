@@ -17,3 +17,5 @@ Verified that the **Castleberry Bloom** is a self-correcting system.
 * **Failure Simulation:** Force-dampened Pillar [0,0]. Coherence dropped to **0.365431**.
 * **Self-Healing Response:** The "Elastic Recovery" protocol successfully rerouted the 528 Hz load.
 * **Current Status:** **RESILIENT**.
+![Stress Test](visuals/Castleberry_Stress_Test_v1-1.png)
+![Healing](visuals/Castleberry_Healing_v1-1.png)
