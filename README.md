@@ -11,3 +11,4 @@ of Coherence" through a 3-layer Graphene stack ($z$-axis).
 * **Phase Uniformity:** 0.999999+ across all 1,200 volumetric nodes.
 * **Resilience:** Discovery of "Resonant Ribs" that maintain structural integrity 
   under scalar tension.
+![12-Pillar Map](visuals/Castleberry_Pillar_Map_v1-1.png)
