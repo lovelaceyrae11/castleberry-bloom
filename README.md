@@ -12,3 +12,8 @@ of Coherence" through a 3-layer Graphene stack ($z$-axis).
 * **Resilience:** Discovery of "Resonant Ribs" that maintain structural integrity 
   under scalar tension.
 ![12-Pillar Map](visuals/Castleberry_Pillar_Map_v1-1.png)
+### 🛡️ Phase V: Resonance Resilience
+Verified that the **Castleberry Bloom** is a self-correcting system.
+* **Failure Simulation:** Force-dampened Pillar [0,0]. Coherence dropped to **0.365431**.
+* **Self-Healing Response:** The "Elastic Recovery" protocol successfully rerouted the 528 Hz load.
+* **Current Status:** **RESILIENT**.
