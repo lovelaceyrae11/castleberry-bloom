@@ -19,5 +19,3 @@ Verified that the **Castleberry Bloom** is a self-correcting system.
 * **Current Status:** **RESILIENT**.
 ![Stress Test](visuals/Castleberry_Stress_Test_v1-1.png)
 ![Healing](visuals/Castleberry_Healing_v1-1.png)
-
-![Healing](visuals/Castleberry_Healing_v1-1.png)
